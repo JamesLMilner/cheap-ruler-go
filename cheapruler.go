@@ -1,8 +1,11 @@
 package cheapruler
 
-import "math"
+import (
+	"errors"
+	"math"
+)
 
-type cheapruler struct {
+type ruler struct {
 	kx      float64
 	ky      float64
 	factors map[string]float64
@@ -14,10 +17,10 @@ type pol struct {
 	t     float64
 }
 
-func NewCheapruler(lat float64, units string) cheapruler {
+func NewCheapruler(lat float64, units string) (ruler, error) {
 
-	cr := cheapruler{}
-	m := 1.0
+	cr := ruler{}
+
 	factors := map[string]float64{
 		"kilometers":    1,
 		"miles":         1000 / 1609.344,
@@ -29,37 +32,44 @@ func NewCheapruler(lat float64, units string) cheapruler {
 		"inches":        1000 / 0.0254,
 	}
 
-	if units != "" {
-		m = factors[units]
+	if m, ok := factors[units]; ok {
+
+		cos := math.Cos(lat * math.Pi / 180)
+		cos2 := 2*cos*cos - 1
+		cos3 := 2*cos*cos2 - cos
+		cos4 := 2*cos*cos3 - cos2
+		cos5 := 2*cos*cos4 - cos3
+
+		// multipliers for converting longitude and latitude degrees into distance
+		// (http://1.usa.gov/1Wb1bv7)
+		cr.kx = m * (111.41513*cos - 0.09455*cos3 + 0.00012*cos5)
+		cr.ky = m * (111.13209 - 0.56605*cos2 + 0.0012*cos4)
+		cr.factors = factors
+
+		return cr, nil
+
+	} else {
+
+		err := errors.New(units + "is not a valid unit")
+		return cr, err
+
 	}
 
-	cos := math.Cos(lat * math.Pi / 180)
-	cos2 := 2*cos*cos - 1
-	cos3 := 2*cos*cos2 - cos
-	cos4 := 2*cos*cos3 - cos2
-	cos5 := 2*cos*cos4 - cos3
-
-	// multipliers for converting longitude and latitude degrees into distance
-	// (http://1.usa.gov/1Wb1bv7)
-	cr.kx = m * (111.41513*cos - 0.09455*cos3 + 0.00012*cos5)
-	cr.ky = m * (111.13209 - 0.56605*cos2 + 0.0012*cos4)
-	cr.factors = factors
-	return cr
 }
 
-func NewCheaprulerFromTile(y float64, z float64, units string) cheapruler {
+func NewCheaprulerFromTile(y float64, z float64, units string) (ruler, error) {
 	n := math.Pi * (1 - 2*(y+0.5)/math.Pow(2, z))
 	lat := math.Atan(0.5*(math.Exp(n)-math.Exp(-n))) * 180 / math.Pi
 	return NewCheapruler(lat, units)
 }
 
-func (cr cheapruler) distance(a []float64, b []float64) float64 {
+func (cr ruler) distance(a []float64, b []float64) float64 {
 	dx := (a[0] - b[0]) * cr.kx
 	dy := (a[1] - b[1]) * cr.ky
 	return math.Sqrt(dx*dx + dy*dy)
 }
 
-func (cr cheapruler) bearing(a []float64, b []float64) float64 {
+func (cr ruler) bearing(a []float64, b []float64) float64 {
 	dx := (b[0] - a[0]) * cr.kx
 	dy := (b[1] - a[1]) * cr.ky
 	if dx == 0.0 && dy == 0.0 {
@@ -72,18 +82,18 @@ func (cr cheapruler) bearing(a []float64, b []float64) float64 {
 	return bearing
 }
 
-func (cr cheapruler) destination(p []float64, dist float64, bearing float64) []float64 {
+func (cr ruler) destination(p []float64, dist float64, bearing float64) []float64 {
 	a := (90.0 - bearing) * math.Pi / 180.0
 	return cr.offset(p, math.Cos(a)*dist, math.Sin(a)*dist)
 }
 
-func (cr cheapruler) offset(p []float64, dx float64, dy float64) []float64 {
+func (cr ruler) offset(p []float64, dx float64, dy float64) []float64 {
 	xo := p[0] + dx/cr.kx
 	yo := p[1] + dy/cr.ky
 	return []float64{xo, yo}
 }
 
-func (cr cheapruler) lineDistance(points [][]float64) float64 {
+func (cr ruler) lineDistance(points [][]float64) float64 {
 	total := 0.0
 	for i := 0; i < len(points)-1; i++ {
 		total += cr.distance(points[i], points[i+1])
@@ -91,7 +101,7 @@ func (cr cheapruler) lineDistance(points [][]float64) float64 {
 	return total
 }
 
-func (cr cheapruler) area(polygon [][][]float64) float64 {
+func (cr ruler) area(polygon [][][]float64) float64 {
 	sum := 0.0
 
 	for i := 0; i < len(polygon); i++ {
@@ -114,7 +124,7 @@ func (cr cheapruler) area(polygon [][][]float64) float64 {
 	return (math.Abs(sum) / 2) * cr.kx * cr.ky
 }
 
-func (cr cheapruler) along(line [][]float64, dist float64) []float64 {
+func (cr ruler) along(line [][]float64, dist float64) []float64 {
 	sum := 0.0
 
 	if dist <= 0 {
@@ -134,7 +144,7 @@ func (cr cheapruler) along(line [][]float64, dist float64) []float64 {
 	return line[len(line)-1]
 }
 
-func (cr cheapruler) pointOnLine(line [][]float64, p []float64) pol {
+func (cr ruler) pointOnLine(line [][]float64, p []float64) pol {
 	minDist := math.Inf(1)
 	var minX float64
 	var minY float64
@@ -183,7 +193,7 @@ func (cr cheapruler) pointOnLine(line [][]float64, p []float64) pol {
 	}
 }
 
-func (cr cheapruler) lineSlice(start []float64, stop []float64, line [][]float64) [][]float64 {
+func (cr ruler) lineSlice(start []float64, stop []float64, line [][]float64) [][]float64 {
 	p1 := cr.pointOnLine(line, start)
 	p2 := cr.pointOnLine(line, stop)
 
@@ -213,7 +223,7 @@ func (cr cheapruler) lineSlice(start []float64, stop []float64, line [][]float64
 	return sl
 }
 
-func (cr cheapruler) lineSliceAlong(start float64, stop float64, line [][]float64) [][]float64 {
+func (cr ruler) lineSliceAlong(start float64, stop float64, line [][]float64) [][]float64 {
 	sum := 0.0
 	var sl [][]float64
 
@@ -241,7 +251,7 @@ func (cr cheapruler) lineSliceAlong(start float64, stop float64, line [][]float6
 	return sl
 }
 
-func (cr cheapruler) bufferPoint(p []float64, buffer float64) []float64 {
+func (cr ruler) bufferPoint(p []float64, buffer float64) []float64 {
 	var v = buffer / cr.ky
 	var h = buffer / cr.kx
 	return []float64{
@@ -252,7 +262,7 @@ func (cr cheapruler) bufferPoint(p []float64, buffer float64) []float64 {
 	}
 }
 
-func (cr cheapruler) bufferBBox(bbox []float64, buffer float64) []float64 {
+func (cr ruler) bufferBBox(bbox []float64, buffer float64) []float64 {
 	var v = buffer / cr.ky
 	var h = buffer / cr.kx
 	return []float64{
@@ -263,7 +273,7 @@ func (cr cheapruler) bufferBBox(bbox []float64, buffer float64) []float64 {
 	}
 }
 
-func (cr cheapruler) insideBBox(p []float64, bbox []float64) bool {
+func (cr ruler) insideBBox(p []float64, bbox []float64) bool {
 	return p[0] >= bbox[0] &&
 		p[0] <= bbox[2] &&
 		p[1] >= bbox[1] &&
