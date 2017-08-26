@@ -53,16 +53,16 @@ func TestCheaprulerHasMethods(t *testing.T) {
 		t.Error(err)
 	}
 
-	t.Log("OK", cr.along)
-	t.Log("OK", cr.area)
-	t.Log("OK", cr.bearing)
-	t.Log("OK", cr.bufferBBox)
-	t.Log("OK", cr.bufferPoint)
-	t.Log("OK", cr.destination)
-	t.Log("OK", cr.distance)
-	t.Log("OK", cr.insideBBox)
-	t.Log("OK", cr.lineDistance)
-	t.Log("OK", cr.factors)
+	t.Log("OK", cr.Along)
+	t.Log("OK", cr.Area)
+	t.Log("OK", cr.Bearing)
+	t.Log("OK", cr.BufferBBox)
+	t.Log("OK", cr.BufferPoint)
+	t.Log("OK", cr.Destination)
+	t.Log("OK", cr.Distance)
+	t.Log("OK", cr.InsideBBox)
+	t.Log("OK", cr.LineDistance)
+	t.Log("OK", cr.Factors)
 
 }
 
@@ -81,7 +81,7 @@ func TestDistanceKilometres(t *testing.T) {
 	t.Log("Check distance calculations are accurate in kilometres")
 	kilocr, _ := NewCheapruler(32.8351, "kilometers")
 
-	expected := kilocr.distance([]float64{-96.920341, 32.838261}, []float64{-96.920421, 32.838295})
+	expected := kilocr.Distance([]float64{-96.920341, 32.838261}, []float64{-96.920421, 32.838295})
 	actual := 0.008385790760648736
 
 	assertErr(t, expected, actual, 0.003, "distance in kilometres")
@@ -94,8 +94,8 @@ func TestDistanceMiles(t *testing.T) {
 	milescr, _ := NewCheapruler(32.8351, "miles")
 	kilocr, _ := NewCheapruler(32.8351, "kilometers")
 
-	d := kilocr.distance([]float64{30.5, 32.8351}, []float64{30.51, 32.8451})
-	d2 := milescr.distance([]float64{30.5, 32.8351}, []float64{30.51, 32.8451})
+	d := kilocr.Distance([]float64{30.5, 32.8351}, []float64{30.51, 32.8451})
+	d2 := milescr.Distance([]float64{30.5, 32.8351}, []float64{30.51, 32.8451})
 
 	assertErr(t, d/d2, 1.609344, 1e-12, "distance in miles")
 
@@ -105,7 +105,7 @@ func TestBearing(t *testing.T) {
 
 	t.Log("Check bearing calculations are accurate in miles")
 	kilocr, _ := NewCheapruler(32.8351, "kilometers")
-	expected := kilocr.bearing([]float64{-96.920341, 32.838261}, []float64{-96.920421, 32.838295})
+	expected := kilocr.Bearing([]float64{-96.920341, 32.838261}, []float64{-96.920421, 32.838295})
 	actual := -63.279807556490866
 
 	assertErr(t, expected, actual, 0.005, "bearing")
