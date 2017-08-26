@@ -67,13 +67,25 @@ func TestCheaprulerHasMethods(t *testing.T) {
 }
 
 func TestNewCheaprulerFromTile(t *testing.T) {
-	t.Log("Check NewCheapruler has all exported methods")
+	t.Log("Check NewCheaprulerFromTile works correctly")
 
 	cr, err := NewCheaprulerFromTile(1.0, 1.0, "metres")
 	if err != nil {
 		t.Error(err)
 	}
 	t.Log("OK", cr)
+}
+
+func TestInvalidNewCheaprulerFromTile(t *testing.T) {
+	t.Log("Check NewCheaprulerFromTile errors correctly")
+
+	_, err := NewCheaprulerFromTile(1.0, 1.0, "nonesense")
+
+	if err != nil {
+		t.Log("Errored as expected")
+	} else {
+		t.Error("Cheapruler constructor did not throw an error as expected for wrong units")
+	}
 }
 
 func TestDistanceKilometres(t *testing.T) {
