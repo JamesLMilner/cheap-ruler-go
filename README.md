@@ -1,6 +1,6 @@
 # Cheapruler (Go)
 
-Based [Vladimir Agafonkin](https://github.com/mourner)'s JavaScript library [cheapruler](https://github.com/mapbox/cheap-ruler)
+Based on [Vladimir Agafonkin](https://github.com/mourner)'s JavaScript library [cheapruler](https://github.com/mapbox/cheap-ruler)
 
 "A collection of very fast approximations to common geodesic measurements. Useful for performance-sensitive code that measures things on a city scale.
 
