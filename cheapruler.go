@@ -146,9 +146,9 @@ func (cr CheapRuler) Along(line [][]float64, dist float64) []float64 {
 	}
 
 	for i := 0; i < len(line)-1; i++ {
-		var p0 = line[i]
-		var p1 = line[i+1]
-		var d = cr.Distance(p0, p1)
+		p0 := line[i]
+		p1 := line[i+1]
+		d := cr.Distance(p0, p1)
 		sum += d
 		if sum > dist {
 			return interpolate(p0, p1, (dist-(sum-d))/d)
@@ -272,8 +272,8 @@ func (cr CheapRuler) LineSliceAlong(start float64, stop float64, line [][]float6
 // Given a point, returns a bounding box slice ([]float64{w, s, e, n})
 // created from the given point buffered by a given distance.
 func (cr CheapRuler) BufferPoint(p []float64, buffer float64) []float64 {
-	var v = buffer / cr.Ky
-	var h = buffer / cr.Kx
+	v := buffer / cr.Ky
+	h := buffer / cr.Kx
 	return []float64{
 		p[0] - h,
 		p[1] - v,
@@ -284,8 +284,8 @@ func (cr CheapRuler) BufferPoint(p []float64, buffer float64) []float64 {
 
 // Given a bounding box, returns the box buffered by a given distance.
 func (cr CheapRuler) BufferBBox(bbox []float64, buffer float64) []float64 {
-	var v = buffer / cr.Ky
-	var h = buffer / cr.Kx
+	v := buffer / cr.Ky
+	h := buffer / cr.Kx
 	return []float64{
 		bbox[0] - h,
 		bbox[1] - v,
@@ -307,8 +307,8 @@ func equals(a []float64, b []float64) bool {
 }
 
 func interpolate(a []float64, b []float64, t float64) []float64 {
-	var dx = b[0] - a[0]
-	var dy = b[1] - a[1]
+	dx := b[0] - a[0]
+	dy := b[1] - a[1]
 	return []float64{
 		a[0] + dx*t,
 		a[1] + dy*t,
