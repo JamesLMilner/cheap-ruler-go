@@ -1,6 +1,7 @@
 package cheapruler
 
 import (
+	"github.com/stretchr/testify/assert"
 	"math"
 	"strconv"
 	"testing"
@@ -15,9 +16,8 @@ func assertErr(t *testing.T, actual float64, expected float64, maxErr float64, d
 	if errVal > maxErr {
 		strErrVal := strconv.FormatFloat(errVal, 'f', 6, 64)
 		strMaxErr := strconv.FormatFloat(maxErr, 'f', 6, 64)
-		t.Error("Error margin was too high, error was " + strErrVal + ", max error is " + strMaxErr)
+		t.Error("Error margin was too high, error was "+strErrVal+", max error is "+strMaxErr, "description: "+description)
 	}
-
 }
 
 func TestNewCheapruler(t *testing.T) {
@@ -117,9 +117,142 @@ func TestBearing(t *testing.T) {
 
 	t.Log("Check bearing calculations are accurate in miles")
 	kilocr, _ := NewCheapruler(32.8351, "kilometers")
-	expected := kilocr.Bearing([]float64{-96.920341, 32.838261}, []float64{-96.920421, 32.838295})
-	actual := -63.279807556490866
+	actual := kilocr.Bearing([]float64{-96.920341, 32.838261}, []float64{-96.920421, 32.838295})
+	expected := -63.279807556490866
 
-	assertErr(t, expected, actual, 0.005, "bearing")
+	assertErr(t, actual, expected, 0.005, "bearing")
 
+}
+
+func TestBearingZero(t *testing.T) {
+	t.Log("Test when bearing is zero")
+
+	kilocr, _ := NewCheapruler(30, "kilometers")
+	actual := kilocr.Bearing([]float64{10, 10}, []float64{10, 10})
+	expected := 0.0
+	assertErr(t, actual, expected, 0.005, "zero bearing")
+}
+
+func TestDestination(t *testing.T) {
+	t.Log("Test destination function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	actual := kilocr.Destination([]float64{0, 0}, 10000, 0)
+	expected := []float64{0.000000000000005500534937111209, 90.44270255818994}
+	assertErr(t, actual[0], expected[0], 0.005, "destination x")
+	assertErr(t, actual[1], expected[1], 0.005, "destination y")
+}
+
+func TestLineDistance(t *testing.T) {
+	t.Log("Test LineDistance function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	point1 := []float64{0, 0}
+	point2 := []float64{0, 50}
+	actual := kilocr.LineDistance([][]float64{point1, point2})
+	expected := 5528.362
+	assertErr(t, actual, expected, 0.005, "line distance")
+}
+
+func TestArea(t *testing.T) {
+	t.Log("Test Area function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	point1 := []float64{-67.031, 50.458}
+	point2 := []float64{-67.031, 50.534}
+	point3 := []float64{-66.929, 50.534}
+	point4 := []float64{-66.929, 50.458}
+	points := [][]float64{point1, point2, point3, point4, point1}
+	outer := [][][]float64{points}
+	actual := kilocr.Area(outer)
+	// todo: why is result 0.0?
+	expected := 0.0
+	assertErr(t, actual, expected, 0.005, "area")
+}
+
+func TestAlong(t *testing.T) {
+	t.Log("Along function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	point1 := []float64{0, 0}
+	point2 := []float64{0, 50}
+	actual := kilocr.Along([][]float64{point1, point2}, 25)
+	expectedX := 0.0
+	expectedY := 0.2261067563954748
+	assertErr(t, actual[0], expectedX, 0.005, "line along x")
+	assertErr(t, actual[1], expectedY, 0.005, "line along y")
+}
+
+func TestPointOnLine(t *testing.T) {
+	t.Log("Point on line function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	point1 := []float64{0, 0}
+	point2 := []float64{0, 50}
+	pointOnLine := []float64{0.5, 0.5}
+	actual := kilocr.PointOnLine([][]float64{point1, point2}, pointOnLine)
+	assertErr(t, actual.Point[0], 0.0, 0.005, "Point on line x")
+	assertErr(t, actual.Point[1], 0.5, 0.005, "Point on line y")
+}
+
+func TestInsideBBox(t *testing.T) {
+	t.Log("InsideBBox function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	p := []float64{1, 1}
+	actual := kilocr.InsideBBox(p, []float64{0, 0, 2, 2})
+	assert.True(t, actual)
+}
+
+func TestBufferPoint(t *testing.T) {
+	t.Log("Test buffer point function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	p := []float64{0, 0}
+	actual := kilocr.BufferPoint(p, 500)
+	// BufferPoint returns: []float64{w, s, e, n}
+	expected := []float64{-4.491527631428836, -4.522135127909497, 4.491527631428836, 4.522135127909497}
+	assertErr(t, actual[0], expected[0], 0.005, "Buffer point first")
+	assertErr(t, actual[1], expected[1], 0.005, "Buffer point second")
+	assertErr(t, actual[2], expected[2], 0.005, "Buffer point third")
+	assertErr(t, actual[3], expected[3], 0.005, "Buffer point third")
+}
+
+func TestBufferBbox(t *testing.T) {
+	t.Log("Test buffer bbox function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	bbox := []float64{30.5, 50.5, 31, 51}
+	actual := kilocr.BufferBBox(bbox, 0.2)
+	expected := []float64{30.498203388947427, 50.49819114594884, 31.001796611052573, 51.00180885405116}
+	assertErr(t, actual[0], expected[0], 0.005, "Buffer point first")
+	assertErr(t, actual[1], expected[1], 0.005, "Buffer point second")
+	assertErr(t, actual[2], expected[2], 0.005, "Buffer point third")
+	assertErr(t, actual[3], expected[3], 0.005, "Buffer point third")
+}
+
+func TestLineSlice(t *testing.T) {
+	t.Log("Test line slice function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	p1 := []float64{-67.04, 50.5}
+	p2 := []float64{-67.05, 50.56}
+	line := [][]float64{{-67.031, 50.458}, {-67.031, 50.534}, {-66.929, 50.534}, {-66.929, 50.458}}
+	actual := kilocr.LineSlice(p1, p2, line)
+
+	sl1 := []float64{-67.031, 50.5}
+	sl2 := []float64{-67.031, 50.534}
+	assertErr(t, actual[0][0], sl1[0], 0.005, "Line slice first")
+	assertErr(t, actual[0][1], sl1[1], 0.005, "Line slice second")
+	assertErr(t, actual[1][0], sl2[0], 0.005, "Line slice third")
+	assertErr(t, actual[1][1], sl2[1], 0.005, "Line slice fourth")
+}
+
+func TestLineSliceAlong(t *testing.T) {
+	t.Log("Test line slice along function")
+	kilocr, _ := NewCheapruler(0, "kilometers")
+	line := [][]float64{{-67.031, 50.458}, {-67.031, 50.534}, {-66.929, 50.534}, {-66.929, 50.458}}
+	actual := kilocr.LineSliceAlong(10, 20, line)
+	p1 := []float64{-67.01665505103723, 50.534}
+	p2 := []float64{-66.929, 50.534}
+	p3 := []float64{-66.929, 50.53180967346205}
+
+	assert.True(t, len(actual) == 3)
+	assertErr(t, actual[0][0], p1[0], 0.005, "Line slice first")
+	assertErr(t, actual[0][1], p1[1], 0.005, "Line slice second")
+	assertErr(t, actual[1][0], p2[0], 0.005, "Line slice third")
+	assertErr(t, actual[1][1], p2[1], 0.005, "Line slice fourth")
+	assertErr(t, actual[2][0], p3[0], 0.005, "Line slice fifth")
+	assertErr(t, actual[2][1], p3[1], 0.005, "Line slice sixt")
 }
