@@ -8,6 +8,10 @@ the results are very precise — within [0.1% margin of error](#precision)
 compared to [Vincenti formulas](https://en.wikipedia.org/wiki/Vincenty%27s_formulae),
 and usually much less for shorter distances."
 
+## Docs
+
+Documentation can be found on [godoc here](https://godoc.org/github.com/JamesMilnerUK/cheap-ruler-go)
+
 ## Acknowledgements
 
 Based on [Vladimir Agafonkin](https://github.com/mourner)'s JavaScript library [cheapruler](https://github.com/mapbox/cheap-ruler)
