@@ -1,7 +1,6 @@
 package cheapruler
 
 import (
-	"github.com/stretchr/testify/assert"
 	"math"
 	"strconv"
 	"testing"
@@ -195,7 +194,11 @@ func TestInsideBBox(t *testing.T) {
 	kilocr, _ := NewCheapruler(0, "kilometers")
 	p := []float64{1, 1}
 	actual := kilocr.InsideBBox(p, []float64{0, 0, 2, 2})
-	assert.True(t, actual)
+
+	if actual != true {
+		t.Error("point should be inside bounding box")
+	}
+
 }
 
 func TestBufferPoint(t *testing.T) {
@@ -248,7 +251,10 @@ func TestLineSliceAlong(t *testing.T) {
 	p2 := []float64{-66.929, 50.534}
 	p3 := []float64{-66.929, 50.53180967346205}
 
-	assert.True(t, len(actual) == 3)
+	if len(actual) != 3 {
+		t.Error("the length should be 3")
+	}
+
 	assertErr(t, actual[0][0], p1[0], 0.005, "Line slice first")
 	assertErr(t, actual[0][1], p1[1], 0.005, "Line slice second")
 	assertErr(t, actual[1][0], p2[0], 0.005, "Line slice third")
