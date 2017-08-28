@@ -1,6 +1,7 @@
 package cheapruler
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"testing"
@@ -87,9 +88,9 @@ func TestInvalidNewCheaprulerFromTile(t *testing.T) {
 	}
 }
 
-func TestDistanceKilometres(t *testing.T) {
+func TestDistanceKilometers(t *testing.T) {
 
-	t.Log("Check distance calculations are accurate in kilometres")
+	t.Log("Check distance calculations are accurate in kilometers")
 	kilocr, _ := NewCheapruler(32.8351, "kilometers")
 
 	expected := kilocr.Distance([]float64{-96.920341, 32.838261}, []float64{-96.920421, 32.838295})
@@ -97,6 +98,15 @@ func TestDistanceKilometres(t *testing.T) {
 
 	assertErr(t, expected, actual, 0.003, "distance in kilometres")
 
+}
+
+func ExampleDistanceKilometers() {
+	cr, _ := NewCheapruler(32.8351, "kilometers")
+	pointA := []float64{-96.920341, 32.838261}
+	pointB := []float64{-96.920421, 32.838295}
+	dist := cr.Distance(pointA, pointB)
+	fmt.Println(dist)
+	// Output: 0.008385790760648736
 }
 
 func TestDistanceMiles(t *testing.T) {

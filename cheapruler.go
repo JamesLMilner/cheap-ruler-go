@@ -29,6 +29,7 @@ func NewCheapruler(lat float64, units string) (CheapRuler, error) {
 	// Multipliers for converting between units.
 	factors := map[string]float64{
 		"kilometers":    1,
+		"kilometres":    1,
 		"miles":         1000 / 1609.344,
 		"nauticalmiles": 1000 / 1852,
 		"meters":        1000,
