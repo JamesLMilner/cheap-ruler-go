@@ -100,7 +100,7 @@ func TestDistanceKilometers(t *testing.T) {
 
 }
 
-func ExampleDistanceKilometers() {
+func ExampleCheapRuler_Distance() {
 	cr, _ := NewCheapruler(32.8351, "kilometers")
 	pointA := []float64{-96.920341, 32.838261}
 	pointB := []float64{-96.920421, 32.838295}
