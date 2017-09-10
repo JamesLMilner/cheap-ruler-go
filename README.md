@@ -1,5 +1,7 @@
 # Cheapruler (Go)
 
+[![godoc reference](godoc.png)](https://godoc.org/github.com/JamesMilnerUK/cheapruler-go)
+
 "A collection of very fast approximations to common geodesic measurements. Useful for performance-sensitive code that measures things on a city scale.
 
 The approximations are based on an [FCC-approved formula of ellipsoidal Earth projection](https://www.gpo.gov/fdsys/pkg/CFR-2005-title47-vol4/pdf/CFR-2005-title47-vol4-sec73-208.pdf).
@@ -22,10 +24,6 @@ fmt.Println(dist)
 // Output: 0.008385790760648736
 
 ```
-
-## Docs
-
-Full documentation can be found on [godoc here](https://godoc.org/github.com/JamesMilnerUK/cheap-ruler-go)
 
 ## Acknowledgements
 
