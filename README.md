@@ -1,6 +1,6 @@
 # Cheapruler (Go)
 
-[![godoc reference](godoc.png)](https://godoc.org/github.com/JamesMilnerUK/cheapruler-go)
+[![godoc reference](godoc.png)](https://godoc.org/github.com/JamesLMilner/cheapruler-go)
 
 "A collection of very fast approximations to common geodesic measurements. Useful for performance-sensitive code that measures things on a city scale.
 
